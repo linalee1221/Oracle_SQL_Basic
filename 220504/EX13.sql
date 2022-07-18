@@ -1,0 +1,10 @@
+-- 연습문제 : 뷰(VIEW) 실습
+-- 1) 20번 부서에 소석된 사원의 사원번호와 이름과 부서번호를 출력하는 VIEW 정의
+CREATE OR REPLACE VIEW VW_EMP_DNO AS
+SELECT ENO, ENAME, DNO FROM EMPLOYEE
+WHERE DNO = 20;
+
+-- 2) 이미 생성되어 있는 상기 뷰에 대해 급여를 추가 출력하도록 수정
+CREATE OR REPLACE VIEW VW_EMP_DNO AS
+SELECT ENO, ENAME, DNO, SALARY FROM EMPLOYEE
+WHERE DNO = 20;

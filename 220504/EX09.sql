@@ -1,0 +1,76 @@
+-- ★ DML(데이터 조작어) 실습 ★
+
+-- 접속한 유저의 테이블 목록을 보는 SQL명령어
+SELECT * FROM USER_TABLES;
+
+-- 연습문제
+-- 1) EMPLOYEE 테이블의 구조만 복사하여 EMP_INSERT란 이름의 빈 테이블 생성
+CREATE TABLE EMP_INSERT AS
+SELECT * FROM EMPLOYEE
+WHERE 1=2; -- 거짓조건을 만들면 데이터는 안들어오고 구조만 복사해올 수 있다
+-- 잘 만들어졌는지 확인하기
+SELECT * FROM EMP_INSERT;
+
+-- 2) 본인을 EMP_INSERT(임시 직원 테이블) 테이블에 추가하되 SYSDATE를 이용해서 입사일(HIREDATE)을 오늘로 입력
+-- 테이블 구조 보는법
+DESC EMP_INSERT;
+-- 컬럼 목록을 보는 딕셔너리
+SELECT TABLE_NAME, COLUMN_ID, COLUMN_NAME
+FROM USER_TAB_COLUMNS
+ORDER BY TABLE_NAME, COLUMN_ID;
+-- 테이블에 데이터 넣기
+INSERT INTO EMP_INSERT
+VALUES(1, 'EUNSONG', 'STAFF', NULL, SYSDATE, 2700, 230, 10);
+SELECT * FROM EMP_INSERT;
+
+-- 3) EMP_INSERT(임시 직원 테이블) 테이블에 옆 사람을 추가하되 TO_DATE 함수를 이용해서 입사일(HIREDATE)을 어제로 입력
+-- 어제날짜 입력하기 : SYSDATE-1
+INSERT INTO EMP_INSERT
+VALUES(2, 'JUNGMK', 'SOLDIER', NULL, TO_DATE(SYSDATE-1, 'YY/MM/DD'), 1150, NULL, 20);
+-- 데이터 확인
+SELECT * FROM EMP_INSERT;
+
+-- 4) EMPLOYEE 테이블의 구조와 내용을 복사하여 EMP_COPY 테이블 생성
+CREATE TABLE EMP_COPY AS
+SELECT * FROM EMPLOYEE;
+-- 테이블 확인
+SELECT * FROM EMP_COPY;
+
+-- 연습문제 : DML(데이터 조작어) 실습
+-- 5) 사원번호가 7788인 사원의 부서번호(DNO)를 10번으로 수정
+-- 대상테이블 : EMP_COPY
+UPDATE EMP_COPY
+SET DNO=10
+WHERE ENO=7788;
+
+-- 6) 사원번호 7788의 담당업무(JOB) 및 급여(SALARY)를 사원번호 7499와 일치하도록 수정
+-- 대상테이블 : EMP_COPY
+UPDATE EMP_COPY
+SET(JOB, SALARY) = (SELECT JOB, SALARY FROM EMP_COPY WHERE ENO=7499)
+WHERE ENO=7788;
+
+-- 7) DEPARTMENT 테이블의 구조와 내용을 복사하여 DEPT_COPY 생성
+CREATE TABLE DEPT_COPY AS
+SELECT * FROM DEPARTMENT;
+
+
+-- 8) DEPT_COPY 테이블에서 부서명(DENAME)이 RESEARCH인 부서를 제거
+DELETE FROM DEPT_COPY
+WHERE DNAME='RESEARCH';
+
+-- 9) DEPT_COPY 테이블에서 부서 번호가 10 이거나 40인 부서를 제거
+DELETE FROM DEPT_COPY
+WHERE DNO IN(10, 40);
+
+SELECT * FROM DEPT_COPY;
+
+COMMIT;
+
+-- 도전과제
+-- DEPT_COPY 테이블에서 부서명(DNAME)이 'SALES'이면 지역명(LOC)에 'SEOUL'이라고 수정하고
+-- 아니면 'BUSAN'이라고 수정
+UPDATE DEPT_COPY
+SET LOC=DECODE(DNAME,'SALES','SEOUL','BUSAN');
+
+SELECT * FROM DEPT_COPY;
+COMMIT;

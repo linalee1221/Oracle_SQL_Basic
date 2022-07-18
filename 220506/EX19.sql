@@ -1,0 +1,36 @@
+-- 문제1) 사원번호가 7788인 사원과 담당업무가 같은 사원을 표시
+-- 힌트 : =서브쿼리 사용 / 담당업무 : JOB / 대상테이블 : EMPLOYEE
+
+SELECT ENAME, ENO, JOB FROM EMPLOYEE WHERE JOB = (SELECT JOB FROM EMPLOYEE WHERE ENO = '7788');
+
+-- 문제2) 최소 급여를 받는 사원의 이름, 담당업무, 급여 출력
+SELECT ENAME, JOB, SALARY FROM EMPLOYEE WHERE SALARY = (SELECT MIN(SALARY) FROM EMPLOYEE);
+
+-- 문제3) 평균 급여가 가장 적은 사원의 담당 업무를 찾아 직급과 평균 급여를 표시
+-- (담당업무별로 최소 평균급여를 내면 = 평균급여가 가장적은 사원의 담당업무)
+-- 어려운문제
+-- 담당업무 : JOB / 대상테이블 : EMPLOYEE
+SELECT JOB, ROUND(AVG(SALARY), 1) AS 평균급여
+FROM EMPLOYEE GROUP BY JOB
+HAVING ROUND(AVG(SALARY), 1) = (SELECT MIN(ROUND(AVG(SALARY),1)) FROM EMPLOYEE GROUP BY JOB);
+
+
+-- 문제 4) 각 부서의 최소 급여를 받는 사원의 이름, 급여, 부서번호를 표기하시오.
+-- 힌트 : IN 서브쿼리
+SELECT ENAME, SALARY, DNO FROM EMPLOYEE 
+WHERE SALARY IN(SELECT MIN(SALARY) FROM EMPLOYEE GROUP BY DNO);
+
+-- 문제 5) 매니저가 없는 사원의 이름을 표기하시오.
+SELECT ENAME, MANAGER FROM EMPLOYEE WHERE ENO IN
+(SELECT ENO FROM EMPLOYEE WHERE MANAGER IS NULL);
+
+
+-- 문제 6) 매니저가 있는 사원의 이름을 표기하시오.
+SELECT ENAME, MANAGER FROM EMPLOYEE 
+WHERE ENO IN(SELECT ENO FROM EMPLOYEE WHERE MANAGER IS NOT NULL);
+
+-- 문제 7) BLAKE와 동일한 부서에 속한 사원의 이름과 입사일을 표기하는 질의를
+-- 작성하시오.( 단, BLAKE는 제외하시오. )
+SELECT ENAME, HIREDATE FROM EMPLOYEE
+WHERE DNO = (SELECT DNO FROM EMPLOYEE WHERE ENAME = 'BLAKE')
+AND ENAME <> 'BLAKE';

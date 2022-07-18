@@ -1,0 +1,322 @@
+--0503
+--☆★☆★☆ 조인(JOIN) ☆★☆★☆
+--사원테이블에 사원번호가 7788인 직원의 부서명은?
+SELECT DNO FROM EMPLOYEE
+WHERE ENO = 7788;
+DESC EMPLOYEE;
+
+SELECT DNAME FROM DEPARTMENT
+WHERE DNO = 20;
+DESC DEPARTMENT;
+
+--일반 JOIN(EQUAL JOIN, INNER JOIN) 교집합
+SELECT A.DNO, A.DNAME, A.LOC, B.ENO, B.ENAME 
+FROM DEPARTMENT A,
+     EMPLOYEE B
+WHERE B.DNO = A.DNO
+AND B.ENO = 7788;
+
+--곱조인(Cartesian Product) : 카디시안 곱
+-- DEPARTMENT 건수 : 4건 X EMPLOYEE 건수 : 14건 = 56건 
+--10만 * 100만 = 1000만 먹통됨
+SELECT COUNT(*)
+FROM DEPARTMENT A,
+     EMPLOYEE B;
+     
+
+--Equal Join(=Join)
+--조인대상 테이블에서 공통 컬럼을 = 비교를 통해 같은 값을 가지는 행을 연결하여 결과를 생성
+--성능 향상 팁 : 항상 작은 건수 테이블이 먼저 처리되게 만드는게 팁
+--문법 :
+--SELECT 테이블1.컬럼, 테이블2.컬럼
+--FROM 테이블1, 테이블2
+--WHERE 테이블2.컬럼=테이블1.컬럼
+
+--문제1) 각 사원들이 소속된 부서 정보 얻기
+SELECT * 
+FROM DEPARTMENT A,
+     EMPLOYEE B
+WHERE B.DNO = A.DNO;
+
+
+--문제2) 사원번호가 7499, 7900 사원들의 소속된 부서정보 모두 출력
+SELECT * 
+FROM DEPARTMENT A,
+     EMPLOYEE B
+WHERE B.DNO = A.DNO --공통 컬럼을 찾아서 =(EQUAL)조인 함
+AND B.ENO IN (7499, 7900);
+
+
+--문제3) 사원번호가 7600 ~ 7700 사이에 있는 사원들의 소속된 부서정보 모두 출력하되, 부서 이름이 SALES인 파트만 출력하세요
+SELECT A.DNO, A.DNAME, A.LOC, B.ENO, B.ENAME, B.JOB, B.MANAGER, B.HIREDATE, B.SALARY, B.COMMISSION 
+FROM DEPARTMENT A,
+     EMPLOYEE B
+WHERE B.DNO = A.DNO
+AND B.ENO BETWEEN 7500 AND 7700
+AND DNAME = 'SALES';
+
+--테이블 주석 및 컬럼 주석 넣기
+--테이블주석
+COMMENT ON TABLE DEPARTMENT IS '부서정보';
+--컬럼 주석
+COMMENT ON COLUMN DEPARTMENT.DNAME IS '부서이름';
+COMMENT ON COLUMN DEPARTMENT.DNO IS '부서번호';
+COMMENT ON COLUMN DEPARTMENT.LOC IS '지역명';
+
+
+COMMENT ON TABLE EMPLOYEE IS '직원정보';
+
+COMMENT ON TABLE BONUS IS '보너스';
+COMMENT ON TABLE SALGRADE IS '급여정보';
+
+
+--NOT EQUAL JOIN  = 범위조인
+--등급(SLAGRADE) 테이블
+--1등급 : 700~1200
+--2등급 : 1201~1400
+--5등급 : 3001~9999
+--급여 등급을 기준으로 사원의 급여가 몇등급에 속하는지 알아보기
+SELECT ENAME, SALARY, GRADE
+FROM SALGRADE A,
+    EMPLOYEE B
+WHERE SALARY BETWEEN LOSAL AND HISAL;
+
+--추가 부서정보 보여주기
+SELECT ENAME, DNAME , SALARY, GRADE
+FROM SALGRADE A,
+    DEPARTMENT B,
+    EMPLOYEE C
+WHERE B.DNO = C.DNO
+AND SALARY BETWEEN LOSAL AND HISAL;
+
+
+--특수용례2) SELF JION
+--사원테이블에 MANAGER 컬럼(그 사원의 매니저 사번)
+SELECT MAN.ENO, MAN.ENAME, MAN.MANAGER, EMP.ENAME 
+FROM EMPLOYEE EMP,
+    EMPLOYEE MAN
+WHERE EMP.ENO = MAN.MANAGER
+AND MAN.ENAME LIKE 'SMITH%';
+
+--특수용례3) ☆★☆ OUTER JOIN
+-- = 조인은 공통 컬럼을 연결해서 데이터를 보여주는데 NULL값은 =연산이 안되기 때문에 데이터에서 제외됨
+--NULL값에 해당되는 다른 컬럼을 보여줘야 할 때도 있음
+SELECT EMP.ENAME AS 직원,
+       MAN.ENAME AS 매니저
+FROM EMPLOYEE EMP,
+     EMPLOYEE MAN
+WHERE EMP.MANAGER = MAN.ENO(+);
+
+
+--DDL(Data Definition Language) : 데이터 정의어
+--테이블 만들기, 테이블 수정하기, 컬럼 수정하기, 컬럼 추가하기
+--테이블 만들기
+--예) 부서 정보를 저장하기 위한 테이블 생성하기
+--테이블명 : TB_DEPARTMENT
+CREATE TABLE TB_DEPARTMENT(
+    DNO NUMBER(2),
+    DNAME VARCHAR2(20),
+    LOC VARCHAR2(20)
+);
+
+--테이블 삭제하기
+DROP TABLE TB_DEPARTMENT2;
+
+
+--테이블 복사하기(백업처럼 쓰기도 함)
+--데이터까지 복사 됨
+CREATE TABLE TB_DEPARTMENT
+AS
+SELECT * 
+FROM DEPARTMENT;
+
+--데이터 빼고 구조만 복사
+CREATE TABLE TB_DEPARTMENT2
+AS
+SELECT * 
+FROM DEPARTMENT
+WHERE 1=2; --거짓으로 조회
+
+--20번 부서 소속 사원의 정보를 포함한 DEPT20 테이블 생성하기
+
+CREATE TABLE TB_DEPARTMENT
+AS
+SELECT * 
+FROM DEPARTMENT
+WHERE DNO = 20;
+
+CREATE TABLE TB_EMPLOYEE
+AS
+SELECT * 
+FROM EMPLOYEE
+WHERE DNO = 20;
+
+DROP TABLE TB_DEPARTMENT02;
+DROP TABLE TB_EMPLOYEE;
+
+--테이블 구조를 변경하는 명령어
+--ALTER TABLE ~ 
+CREATE TABLE TB_DEPARTMENT
+AS
+SELECT *
+FROM DEPARTMENT
+WHERE 1=2;
+
+-- TB_DEPARTMENT 컬럼 추가
+ALTER TABLE TB_DEPARTMENT
+ADD(BIRTH DATE);
+
+--TB_DEPARTMENT 테이블에 컬럼 변경
+--DNAME VARCHAR2(14) -> DNAME VARCHAR2(20)
+ALTER TABLE TB_DEPARTMENT
+MODIFY DNAME VARCHAR2(20);
+
+--TB_DEPARTMENT 테이블에 컬럼 삭제
+--BIRTH 컬럼 삭제
+--한번에 하나만 삭제 가능
+ALTER TABLE TB_DEPARTMENT
+DROP COLUMN BIRTH;
+
+--테이블 이름을 변경하는 명령어
+--문법) RENAME A TO B : A 테이블 명을 B로 바꾸기
+RENAME TB_DEPARTMENT02 TO TB_DEPARTMENT;
+
+--테이블의 모든 데이터를 제거하는 명령어(데이터+할당된 공간)
+CREATE TABLE TB_DEPARTMENT02
+AS
+SELECT *
+FROM DEPARTMENT;
+--데이터 삭제
+TRUNCATE TABLE TB_DEPARTMENT02;
+
+--추가로 오라클 DB에서 사용하는 메타정보(생성된 테이블, 컬럼 정보, 유저정보 등)를 볼 수 있는 테이블
+--USER_xxx : 접속 된 유저에 대한 여러가지 정보들을 보여줌(컬럼, 테이블 등)
+--ALL_XXX : 접속 된 유저 + 다른 유저에 대한 정보들 보여줌(컬럼, 테이블 등)
+--DBA_XXX : 모든 유저에 대한 정보들 보여줌(컬럼, 테이블 등)
+SELECT * FROM USER_TABLES;
+SELECT * FROM ALL_TABLES;
+
+
+-- DML(Data Manipulation Language) : 데이터 조작어
+--INSERT / UPDATE / DELETE
+
+SELECT * FROM USER_TABLES;
+DROP TABLE DEPT;
+
+--테스트용 테이블 및 데이터 만들기
+CREATE TABLE DEPT_COPY
+AS
+SELECT *
+FROM DEPARTMENT;
+SELECT * FROM DEPT_COPY;
+
+--데이터 삭제
+TRUNCATE TABLE DEPT_COPY;
+
+--데이터 추가하기
+INSERT INTO DEPT_COPY(DNO, LOC, DNAME)
+VALUES(20, 'DALLAS', 'RESEARCH');
+INSERT INTO DEPT_COPY
+VALUES(30, 'SALES', 'CHICAGO');
+INSERT INTO DEPT_COPY
+VALUES(40, 'OPERATIONS', 'BOSTON');--여기까진 임시 반영
+COMMIT;
+
+-- 데이터 추가
+-- 1) NULL인 값은 생략하고 추가
+INSERT INTO DEPT_COPY(DNO, DNAME)
+VALUES(60, 'SALES');
+
+SELECT * FROM DEPT_COPY;
+
+-- 2) 명시적으로 NULL 추가
+INSERT INTO DEPT_COPY
+VALUES(60, 'OPERATIONS', NULL);
+
+--테스트 데이터 및 EMP_COPY 테이블 만들기
+CREATE TABLE EMP_COPY
+AS
+SELECT *
+FROM EMPLOYEE
+WHERE 1=2;
+
+SELECT * FROM EMP_COPY;
+
+--EMP_COPY 테이블에 데이터 넣기
+INSERT INTO EMP_COPY(ENO, ENAME, JOB, HIREDATE, DNO)
+VALUES(7000, 'CANDY', 'MANAGER', SYSDATE, 10);
+--되돌리기 (COMMIT 하기 전에만 가능)
+ROLLBACK;
+--DB에 영구반영
+COMMIT;
+
+--다른 테이블의 데이터를 복사헤서 INSERT하기
+SELECT * FROM DEPT_COPY;
+--데이터/공간 비우기
+TRUNCATE TABLE DEPT_COPY;
+--다른 테이블의 데이터를 복사해서 INSERT 하기
+INSERT INTO DEPT_COPY
+SELECT * FROM DEPARTMENT;
+
+--데이터 수정하기 : UPDATE
+SELECT * FROM DEPT_COPY;
+
+--일반적인 사용) UPDATE + WHERE
+-- 문법)
+    --UPDATE 테이블명
+    --SET 컬럼명 = 수정할값
+    --WHERE 조건
+UPDATE DEPT_COPY
+SET DNAME = 'PROGRAMMING'
+WHERE DNO = 10;
+
+--실행취소
+ROLLBACK;
+--DB영구반영
+COMMIT;
+
+--문제1) DEPT_COPY 테이블에 LOC 컬럼을 'BUSAN'으로 수정하는데 부서 명이 SALES인 애만 수정
+UPDATE DEPT_COPY
+SET LOC = 'BUSAN'
+WHERE DNAME = 'SALES';
+
+--응용문제2) DEPT_COPY 테이블에 부서번호가 20인 부서만 부서이름을 'JAVA'로 수정하고 LOC컬럼을 'SEOUL'로 수정
+UPDATE DEPT_COPY
+SET DNAME = 'JAVA', LOC = 'SEOUL'
+WHERE DNO = 20;
+
+--특이한 예) DEPT_COPY 테이블에 부서 번호가 10인 데이터를 가져와서 부서번호가 20인 LOC 데이터로 수정하기
+UPDATE DEPT_COPY
+SET LOC = (SELECT LOC FROM DEPT_COPY WHERE DNO = 20) --서브쿼리(쿼리 안의 작은 쿼리)
+WHERE DNO = 10;
+
+
+--DELETE : 테이블의 내용을 삭제하는 DML명령어
+--문법 : 
+-- DELETE [FROM] 테이블명
+-- WHERE 조건
+DELETE FROM DEPT_COPY --FROM 생략 가능
+WHERE DNO = 10;
+
+SELECT * FROM DEPT_COPY;
+
+--문제2) DEPT_COPY 테이블에서 부서번호가 20, 30인 데이터를 삭제하시오
+DELETE FROM DEPT_COPY
+WHERE DNO = 20 OR DNO = 30;
+
+--참고) DELETE ~ 서브쿼리 사용 가능
+DELETE FROM DEPT_COPY
+WHERE DNO = (SELECT DNO FROM DEPARTMENT WHERE DNAME = 'SALES');
+
+-- 참고) ROLLBACK / COMMIT
+-- 트랜잭션(Transaction) 관리
+-- ROLLBACK : INSERT/UPDATE/DELETE 실행취소
+-- COMMIT : INSERT/UPDATE/DELETE 실행 영구 반영
+-- 예) INSERT ~
+--      UPDATE ~
+--      DELETE ~
+--      COMMIT [ROLLBACK] : 트랜잭션 종료(1개의 트랜잭션)
+
+-- 참고사항) AUTOCOMMIT : 자동 DB 영구 반영
+--               ORACLE DB : AUTOCOMMIT = FALSE
+--               MYSQL/MARIADB : AUTOCOMMIT = TRUE
